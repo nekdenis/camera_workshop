@@ -83,13 +83,7 @@ class MainActivity : ComponentActivity() {
                             cameraLens = lens
                         )
                         Controls(
-                            onLensChange = {
-                                lens = if (CameraSelector.LENS_FACING_FRONT == lens) {
-                                    CameraSelector.LENS_FACING_BACK
-                                } else {
-                                    CameraSelector.LENS_FACING_FRONT
-                                }
-                            }
+                            onLensChange = { lens = switchLens(lens) }
                         )
                     }
                 }
@@ -173,4 +167,10 @@ private fun ListenableFuture<ProcessCameraProvider>.configureCamera(
         }
     }, ContextCompat.getMainExecutor(context))
     return this
+}
+
+private fun switchLens(lens: Int) = if (CameraSelector.LENS_FACING_FRONT == lens) {
+    CameraSelector.LENS_FACING_BACK
+} else {
+    CameraSelector.LENS_FACING_FRONT
 }
