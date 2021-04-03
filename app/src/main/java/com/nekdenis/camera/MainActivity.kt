@@ -5,27 +5,34 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.camera.core.CameraSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.nekdenis.camera.ui.theme.CameraComposeWorkshopTheme
-import android.widget.Toast
-import androidx.activity.compose.setContent
 import androidx.lifecycle.LifecycleOwner
 import com.google.common.util.concurrent.ListenableFuture
+import com.nekdenis.camera.ui.theme.CameraComposeWorkshopTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,8 +77,15 @@ class MainActivity : ComponentActivity() {
             CameraComposeWorkshopTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
-                    CameraPreview()
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        var lens by remember { mutableStateOf(CameraSelector.LENS_FACING_FRONT) }
+                        CameraPreview(
+                            cameraLens = lens
+                        )
+                        Controls(
+                            onLensChange = { lens = switchLens(lens) }
+                        )
+                    }
                 }
             }
         }
@@ -80,16 +94,16 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun CameraPreview(
         modifier: Modifier = Modifier,
-        cameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA,
+        cameraLens: Int,
         scaleType: PreviewView.ScaleType = PreviewView.ScaleType.FILL_CENTER,
     ) {
         val lifecycleOwner = LocalLifecycleOwner.current
         val context = LocalContext.current
         val previewView = remember { PreviewView(context) }
-        val cameraProviderFuture = remember {
+        val cameraProvider =
             ProcessCameraProvider.getInstance(context)
-                .configureCamera(previewView, lifecycleOwner, cameraSelector, context)
-        }
+                .configureCamera(previewView, lifecycleOwner, cameraLens, context)
+
         AndroidView(
             modifier = modifier,
             factory = {
@@ -110,22 +124,26 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    CameraComposeWorkshopTheme {
-        Greeting("Android")
+fun Controls(
+    onLensChange: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 24.dp),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Button(
+            onClick = onLensChange,
+            modifier = Modifier.wrapContentSize()
+        ) { Icon(Icons.Filled.Cameraswitch, contentDescription = "Switch camera") }
     }
 }
 
 private fun ListenableFuture<ProcessCameraProvider>.configureCamera(
     previewView: PreviewView,
     lifecycleOwner: LifecycleOwner,
-    cameraSelector: CameraSelector,
+    cameraLens: Int,
     context: Context
 ): ListenableFuture<ProcessCameraProvider> {
     addListener({
@@ -139,7 +157,9 @@ private fun ListenableFuture<ProcessCameraProvider>.configureCamera(
             get().apply {
                 unbindAll()
                 bindToLifecycle(
-                    lifecycleOwner, cameraSelector, preview
+                    lifecycleOwner,
+                    CameraSelector.Builder().requireLensFacing(cameraLens).build(),
+                    preview
                 )
             }
         } catch (exc: Exception) {
@@ -147,4 +167,10 @@ private fun ListenableFuture<ProcessCameraProvider>.configureCamera(
         }
     }, ContextCompat.getMainExecutor(context))
     return this
+}
+
+private fun switchLens(lens: Int) = if (CameraSelector.LENS_FACING_FRONT == lens) {
+    CameraSelector.LENS_FACING_BACK
+} else {
+    CameraSelector.LENS_FACING_FRONT
 }
