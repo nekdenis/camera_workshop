@@ -26,6 +26,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+    
     kotlinOptions {
         jvmTarget = "1.8"
         useIR = true
@@ -52,6 +53,10 @@ dependencies {
 
     // CameraX View class
     implementation("androidx.camera:camera-view:1.0.0-alpha20")
+
+
+    implementation("com.google.mlkit:face-detection:16.0.6")
+    implementation("com.google.android.gms:play-services-mlkit-face-detection:16.1.5")
 
 
     implementation("androidx.core:core-ktx:1.3.2")
