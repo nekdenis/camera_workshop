@@ -54,7 +54,7 @@ dependencies {
     // CameraX View class
     implementation("androidx.camera:camera-view:1.0.0-alpha20")
 
-
+    implementation("com.google.mlkit:pose-detection:17.0.1-beta3")
     implementation("com.google.mlkit:face-detection:16.0.6")
     implementation("com.google.android.gms:play-services-mlkit-face-detection:16.1.5")
 
