@@ -20,7 +20,7 @@ For code, please, checkout Pull Requests:
 * [Add pose detection](https://github.com/nekdenis/camera_workshop/pull/6/files)
 
 
-## New project
+## Step 1. New project
 
 [PR with changes](https://github.com/nekdenis/camera_workshop/pull/1/files)
    
@@ -57,7 +57,7 @@ Creating basic composable:
       Text(text = "Hello $name!")
     }
 
-## Requesting permissions
+## Step 2. Requesting permissions
 
 [PR with changes](https://github.com/nekdenis/camera_workshop/pull/2/files)
    
@@ -91,7 +91,7 @@ Requesting permission:
     }
 
 
-## Showing camera preview
+## Step 3. Showing camera preview
 
 [PR with changes](https://github.com/nekdenis/camera_workshop/pull/3/files)
    
@@ -153,7 +153,7 @@ Configuring basic camera:
        return this
       }
 
-## Adding camera switch button
+## Step 4. Adding camera switch button
 
 [PR with changes](https://github.com/nekdenis/camera_workshop/pull/4/files)
 
