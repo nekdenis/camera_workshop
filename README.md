@@ -144,3 +144,36 @@ Configuring basic camera:
        }, ContextCompat.getMainExecutor(context))
        return this
       }
+
+## Adding camera switch button
+
+[PR with changes](https://github.com/nekdenis/camera_workshop/pull/4/files)
+
+<img src="https://user-images.githubusercontent.com/2456891/114135203-c4078480-98bd-11eb-9dff-0fe6d2849ba1.png" width="200" />
+
+Adding preview composable function:
+
+      @Composable
+      fun Controls(
+          onLensChange: () -> Unit
+      ) {
+          Box(
+              modifier = Modifier
+                  .fillMaxSize()
+                  .padding(bottom = 24.dp),
+              contentAlignment = Alignment.BottomCenter,
+          ) {
+              Button(
+                  onClick = onLensChange,
+                  modifier = Modifier.wrapContentSize()
+              ) { Icon(Icons.Filled.Cameraswitch, contentDescription = "Switch camera") }
+          }
+      }
+
+For binding new lens value to camera [see changes in PR](https://github.com/nekdenis/camera_workshop/pull/4/files)
+
+## Adding face detection
+
+[PR with changes](https://github.com/nekdenis/camera_workshop/pull/5/files)
+
+![face_detection mp4](https://user-images.githubusercontent.com/2456891/114136957-5a3caa00-98c0-11eb-8b3b-11665c3c2865.gif)
