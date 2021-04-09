@@ -1,7 +1,7 @@
 # Camera Workshop that uses Camera X with Compose
 
 
-Note: everythings can be broken because of new versions of CameraX and especially Compose (now in Alpha)
+Note: everythings can be broken because of new versions of CameraX and especially Compose (now in Beta)
 
 For code, please, checkout Pull Requests: 
 
