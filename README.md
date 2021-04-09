@@ -1,5 +1,11 @@
 # Example of CameraX with Compose and MLKit
 
+During this workshop we are going to build camera app with CameraX, Compose and MLKit.
+
+[CameraX](https://developer.android.com/training/camerax) will simplify working with camera on Android for us.
+[Jetpack Compose](https://developer.android.com/jetpack/compose) is the medern standard of UI on Android.
+[MLKit](https://developers.google.com/ml-kit) is a great tool for machine learnining processing of images for tasks such as text recognition, face detection and many more. 
+
 Note: everythings can be broken because of new versions of CameraX and especially Compose (now in Beta)
 
 For code, please, checkout Pull Requests: 
