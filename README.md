@@ -1,5 +1,4 @@
-# Camera Workshop that uses Camera X with Compose
-
+# Example of CameraX with Compose and MLKit
 
 Note: everythings can be broken because of new versions of CameraX and especially Compose (now in Beta)
 
@@ -48,4 +47,37 @@ Creating basic composable:
     @Composable
     fun Greeting(name: String) {
       Text(text = "Hello $name!")
+    }
+
+## Requesting permissions
+
+[PR with changes](https://github.com/nekdenis/camera_workshop/pull/2/files)
+   
+Adding permission to Manifest.xml:
+
+      <uses-permission android:name="android.permission.CAMERA" />
+
+Requesting permission:
+
+    private fun permissionGranted() =
+        ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(
+            this, arrayOf(Manifest.permission.CAMERA), 0
+        )
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                initView()
+            } else {
+                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show()
+            }
+        }
     }
