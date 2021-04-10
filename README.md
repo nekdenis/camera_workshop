@@ -180,8 +180,188 @@ Adding preview composable function:
 
 For binding new lens value to camera [see changes in PR](https://github.com/nekdenis/camera_workshop/pull/4/files)
 
-## Adding face detection
+## Step 5. Adding face detection
 
 [PR with changes](https://github.com/nekdenis/camera_workshop/pull/5/files)
 
 ![face_detection mp4](https://user-images.githubusercontent.com/2456891/114136957-5a3caa00-98c0-11eb-8b3b-11665c3c2865.gif)
+
+Adding MLKit dependencies to build.gradle
+
+      implementation("com.google.mlkit:face-detection:16.0.6")
+      implementation("com.google.android.gms:play-services-mlkit-face-detection:16.1.5")
+
+find latests versions of library [here](https://developers.google.com/ml-kit/release-notes)
+
+
+Here is a simple class that wraps MLKit face detection processor
+
+      class FaceDetectorProcessor {
+
+          private val detector: FaceDetector
+
+          private val executor = TaskExecutors.MAIN_THREAD
+
+          init {
+              val faceDetectorOptions = FaceDetectorOptions.Builder()
+                  .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_NONE)
+                  .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
+                  .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_NONE)
+                  .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                  .setMinFaceSize(0.4f)
+                  .build()
+
+              detector = FaceDetection.getClient(faceDetectorOptions)
+          }
+
+          fun stop() {
+              detector.close()
+          }
+
+          @SuppressLint("UnsafeExperimentalUsageError")
+          fun processImageProxy(image: ImageProxy, onDetectionFinished: (List<Face>) -> Unit) {
+              detector.process(InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees))
+                  .addOnSuccessListener(executor) { results: List<Face> -> onDetectionFinished(results) }
+                  .addOnFailureListener(executor) { e: Exception ->
+                      Log.e("Camera", "Error detecting face", e)
+                  }
+                  .addOnCompleteListener { image.close() }
+          }
+      }
+
+
+Bind analysis use case to camera that is calling FaceDetectorProcessor
+
+      private fun bindAnalysisUseCase(
+          lens: Int,
+          setSourceInfo: (SourceInfo) -> Unit,
+          onFacesDetected: (List<Face>) -> Unit
+      ): ImageAnalysis? {
+
+          val imageProcessor = try {
+              FaceDetectorProcessor()
+          } catch (e: Exception) {
+              Log.e("CAMERA", "Can not create image processor", e)
+              return null
+          }
+          val builder = ImageAnalysis.Builder()
+          val analysisUseCase = builder.build()
+
+          var sourceInfoUpdated = false
+
+          analysisUseCase.setAnalyzer(
+              TaskExecutors.MAIN_THREAD,
+              { imageProxy: ImageProxy ->
+                  if (!sourceInfoUpdated) {
+                      setSourceInfo(obtainSourceInfo(lens, imageProxy))
+                      sourceInfoUpdated = true
+                  }
+                  try {
+                      imageProcessor.processImageProxy(imageProxy, onFacesDetected)
+                  } catch (e: MlKitException) {
+                      Log.e(
+                          "CAMERA", "Failed to process image. Error: " + e.localizedMessage
+                      )
+                  }
+              }
+          )
+          return analysisUseCase
+      }
+
+Adding composable function that draws face oval
+
+      @Composable
+      fun DetectedFaces(
+          faces: List<Face>,
+          sourceInfo: SourceInfo
+      ) {
+          Canvas(modifier = Modifier.fillMaxSize()) {
+              val needToMirror = sourceInfo.isImageFlipped
+              for (face in faces) {
+                  val left =
+                      if (needToMirror) size.width - face.boundingBox.right.toFloat() else face.boundingBox.left.toFloat()
+                  drawRect(
+                      Color.Gray, style = Stroke(2.dp.toPx()),
+                      topLeft = Offset(left, face.boundingBox.top.toFloat()),
+                      size = Size(face.boundingBox.width().toFloat(), face.boundingBox.height().toFloat())
+                  )
+              }
+          }
+      }
+      
+      
+Where SourceInfo is just the info about selected camera preview
+
+      data class SourceInfo(
+          val width: Int,
+          val height: Int,
+          val isImageFlipped: Boolean,
+      )
+      
+Face detection working! But there is one problem:
+
+![face_detection_broken mp4](https://user-images.githubusercontent.com/2456891/114258840-4192c980-997e-11eb-8754-06a1c6c000a0.gif)
+
+Fix scale by placing preview and face into the same coordinates
+
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            with(LocalDensity.current) {
+                Box(
+                    modifier = Modifier
+                        .size(
+                            height = sourceInfo.height.toDp(),
+                            width = sourceInfo.width.toDp()
+                        )
+                        .scale(
+                            calculateScale(
+                                constraints,
+                                sourceInfo,
+                                PreviewScaleType.CENTER_CROP
+                            )
+                        )
+                )
+                {
+                    CameraPreview(previewView)
+                    DetectedFaces(faces = detectedFaces, sourceInfo = sourceInfo)
+                }
+            }
+        }
+    }
+
+where the scale calculation is very simple
+
+      private fun calculateScale(
+          constraints: Constraints,
+          sourceInfo: SourceInfo,
+          scaleType: PreviewScaleType
+      ): Float {
+          val heightRatio = constraints.maxHeight.toFloat() / sourceInfo.height
+          val widthRatio = constraints.maxWidth.toFloat() / sourceInfo.width
+          return when (scaleType) {
+              PreviewScaleType.FIT_CENTER -> kotlin.math.min(heightRatio, widthRatio)
+              PreviewScaleType.CENTER_CROP -> kotlin.math.max(heightRatio, widthRatio)
+          }
+      }
+      
+Now it is working fine:
+
+![face_detection mp4](https://user-images.githubusercontent.com/2456891/114136957-5a3caa00-98c0-11eb-8b3b-11665c3c2865.gif)
+
+For full list of changes in the code [see changes in PR](https://github.com/nekdenis/camera_workshop/pull/5/files)
+
+
+## Step 6. Adding face detection
+
+[PR with changes](https://github.com/nekdenis/camera_workshop/pull/6/files)
+
+![pose-detection mp4](https://user-images.githubusercontent.com/2456891/114259291-a996df00-9981-11eb-8849-b9a582e87fe8.gif)
+
+To refer changes in this PR please look into files. Changes are very trivial.
+
+
+
+
+
