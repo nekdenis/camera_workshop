@@ -353,7 +353,7 @@ Now it is working fine:
 For full list of changes in the code [see changes in PR](https://github.com/nekdenis/camera_workshop/pull/5/files)
 
 
-## Step 6. Adding face detection
+## Step 6. Adding pose detection
 
 [PR with changes](https://github.com/nekdenis/camera_workshop/pull/6/files)
 
