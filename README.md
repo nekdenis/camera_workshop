@@ -10,6 +10,8 @@ During this workshop we are going to build camera app with CameraX, Compose and 
 
 Note: everythings can be broken because of new versions of CameraX and especially Compose (now in Beta)
 
+You can pull code branch-by-branch, or follow steps below, or watch [my presentation here](https://docs.google.com/presentation/d/1sJoKcrmwnAVeF-MhHVvYnHD32-J-HVDLhsx2U3wKiWo/edit?usp=sharing).
+
 For code, please, checkout Pull Requests: 
 
 * [Create empty project](https://github.com/nekdenis/camera_workshop/pull/1/files)
